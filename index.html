@@ -1,0 +1,770 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#05070d">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rana AI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Rana Family AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app.css">
+<style>
+body{animation:fadeIn .4s var(--ease)}
+.app{display:flex;height:100%;height:var(--app-height,100%)}
+.side{width:290px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;transition:transform .25s var(--ease)}
+.side .top{padding:16px;border-bottom:1px solid var(--line)}
+.side h2{margin:0 0 12px;font-size:17px;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:flex;align-items:center;gap:8px}
+.side h2::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--accent-grad);box-shadow:0 0 10px 2px rgba(139,92,246,.8);animation:pulseDot 2.2s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.3)}}
+.side .search{margin-top:10px}
+.list{flex:1;overflow:auto;padding:8px}
+.item{display:flex;align-items:center;gap:6px;padding:10px 11px;border-radius:11px;cursor:pointer;transition:background .18s var(--ease),transform .18s var(--ease);animation:fadeInUp .3s var(--ease) both}
+.item:hover{background:var(--panel2);transform:translateX(2px)}
+.item.active{background:var(--panel2);box-shadow:inset 0 0 0 1px rgba(139,92,246,.4), 0 0 16px -4px rgba(139,92,246,.5)}
+.item .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .acts{display:none;gap:2px} .item:hover .acts{display:flex}
+.ib{background:none;border:0;cursor:pointer;color:var(--muted);padding:3px 6px;border-radius:6px;transition:background .15s,color .15s}
+.ib:hover{background:var(--line);color:var(--text)}
+.foot{padding:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.foot .row{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.bar{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto}
+.bar .title{font-weight:700;font-family:var(--font-display);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#burger{display:none}
+.msgs{flex:1;overflow:auto;padding:24px 16px}
+.msgs .inner{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.msg{max-width:88%;padding:12px 16px;border-radius:18px;white-space:pre-wrap;word-wrap:break-word;animation:fadeInUp .35s var(--ease) both;position:relative}
+.msg.user{align-self:flex-end;background:var(--user);color:#fff;border-bottom-right-radius:6px;box-shadow:0 8px 24px -8px rgba(99,102,241,.55)}
+.msg.assistant{align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:6px;box-shadow:var(--glow)}
+.msg .meta{font-size:11px;color:var(--muted);margin-top:6px;opacity:.85}
+.msg.user .meta{color:rgba(255,255,255,.75)}
+.msg code{background:rgba(0,0,0,.25);padding:1px 6px;border-radius:5px}
+.msg pre{background:rgba(0,0,0,.28);padding:11px;border-radius:10px;overflow:auto;margin:6px 0;white-space:pre-wrap}
+.empty{margin:10vh auto 0;text-align:center;color:var(--muted);max-width:440px;animation:fadeInUp .5s var(--ease) both}
+.empty h2{color:var(--text);margin-bottom:8px;font-size:26px;font-family:var(--font-display)}
+.chips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.chip{background:var(--panel2);border:1px solid var(--line);padding:8px 14px;border-radius:99px;cursor:pointer;font-size:13px;transition:all .2s var(--ease)}
+.chip:hover{border-color:transparent;box-shadow:var(--glow-strong);transform:translateY(-2px)}
+.composer{padding:14px 16px calc(20px + var(--sab));border-top:1px solid var(--line);background:var(--panel);padding-left:max(16px,var(--sal));padding-right:max(16px,var(--sar));flex:0 0 auto}
+/* Desktop/tablet: [ tekstvak ............ ][ 🔇 📞 taal ][ Send ] in één rij */
+.composer .box{max-width:780px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"input tools send";gap:10px;align-items:end}
+.composer textarea{grid-area:input;resize:none;max-height:180px;min-height:46px;width:100%;min-width:0}
+.composer .voice-controls{grid-area:tools}
+.composer #sendBtn{grid-area:send;min-height:46px;white-space:nowrap}
+.attachbar{max-width:780px;margin:0 auto 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.attachbtn{cursor:pointer}
+.attachbtn input{display:none}
+/* Fileschips: één horizontale rij die zijwaarts scrolt i.p.v. de composer hoger te maken.
+   Lange filesnamen worden afgekapt. */
+.filechips{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;min-width:0;flex:1 1 auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.filechips::-webkit-scrollbar{display:none}
+.filechip{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;max-width:210px;min-height:0;background:var(--panel2);border:1px solid var(--line);padding:3px 4px 3px 10px;border-radius:99px;font-size:12px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* sluitknop: klein ogend, maar wel een prima aanraakvlak (34px) zonder de chip hoog te maken */
+.filechip button{border:0;background:none;color:var(--muted);cursor:pointer;padding:0;margin:0;min-height:0 !important;width:28px;height:28px;border-radius:50%;font-size:16px;line-height:1;flex:0 0 auto;display:inline-grid;place-items:center}
+.filechip button:hover{background:var(--line);color:var(--text);transform:none}
+.livehint{font-size:11px;color:var(--muted);margin-left:auto;text-align:right}
+.voice-controls{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}
+.voice-controls .btn{width:auto;flex:0 0 auto}
+#micBtn,#callBtn{min-width:46px;min-height:46px;padding:8px 10px}
+/* taalkiezer: eigen vaste breedte (select is in app.css width:100%, dat overschrijven we hier) */
+#langSel{width:auto;flex:0 1 auto;min-width:0;max-width:124px;min-height:46px;padding:8px 24px 8px 10px;cursor:pointer;text-overflow:clip;white-space:nowrap;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2393a0c2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center}
+.voice-controls .active{border-color:rgba(34,211,238,.7);box-shadow:0 0 18px -5px rgba(34,211,238,.7);color:#fff}
+.voice-status{font-size:11px;color:var(--muted);min-width:0}
+.typing{display:inline-flex;gap:5px;padding:4px 0}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--accent-grad);display:inline-block;animation:typingBounce 1.1s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+/* ---------- Groot scherm (>=1200px): ruimere chat ---------- */
+@media(min-width:1200px){
+  .side{width:320px}
+  .msgs .inner,.composer .box,.attachbar{max-width:860px}
+  .msg{max-width:80%}
+}
+@media(min-width:1700px){
+  .msgs .inner,.composer .box,.attachbar{max-width:980px}
+  body{font-size:16px}
+}
+
+/* ---------- Laptop / tablet landscape (<=1024px): smallere zijbalk ---------- */
+@media(max-width:1024px){
+  .side{width:250px}
+  .bar{padding:12px 14px}
+}
+
+/* ---------- Tablet portret + telefoon (<=900px): zijbalk wordt lade ---------- */
+@media(max-width:900px){
+  .side{position:fixed;inset:0 auto 0 0;z-index:20;transform:translateX(-100%);width:min(82%,340px);padding-top:var(--sat);padding-bottom:var(--sab)}
+  .side.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.5)}
+  #burger{display:inline-flex;align-items:center;justify-content:center;min-width:44px}
+  .bar{padding:calc(10px + var(--sat)) max(12px,var(--sar)) 10px max(12px,var(--sal));gap:8px}
+  .bar .btn{flex:0 0 auto}
+  .msgs{padding:16px max(12px,var(--sar)) calc(var(--composer-h,86px) + 12px) max(12px,var(--sal));-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  /* Vast aan de onderkant van het ZICHTBARE scherm i.p.v. te vertrouwen op flex-hoogte:
+     zo kan de tekstinvoer nooit onder het toetsenbord verdwijnen of ineenklappen. */
+  .composer{padding-top:10px;position:fixed;left:0;right:0;bottom:var(--kb-offset,0px);z-index:6;background:var(--panel)}
+}
+@media(max-width:760px){
+  .msg{max-width:92%;padding:11px 14px}
+  .empty{margin-top:6vh;padding:0 8px}
+  .empty h2{font-size:22px}
+}
+
+/* ---------- Composer: past zich aan de BREEDTE VAN DE CHATKOLOM aan (niet aan het scherm) ----------
+   Smal (telefoon, of tablet met open zijbalk): tekstvak over de volle breedte, daaronder de knoppenrij.
+     [ tekstvak ................................ ]
+     [ 🔇 ][ 📞 ][ taal ▾ ............ ][ Send ]
+   Breed: alles in één rij. Zo klopt het altijd, ook als de zijbalk open of dicht staat. */
+.composer{container-type:inline-size;container-name:composer}
+@container composer (max-width:640px){
+  .composer .box{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"input input" "tools send";gap:8px}
+  .composer .voice-controls{min-width:0}
+  .composer #sendBtn{width:100%;padding:0 16px}
+  #langSel{max-width:132px}
+  .voice-status{display:none}
+  .attachbar{gap:6px}
+  .livehint{flex:1 1 100%;margin-left:0;text-align:left;font-size:11px}
+}
+/* Telefoon: attach-balk minder hoog. Filesknop wordt alleen icoon, de hint past op één regel ernaast. */
+@container composer (max-width:520px){
+  .attachbar:has(.filechip) .livehint{display:none}
+  .attachbar{flex-wrap:nowrap;margin-bottom:6px}
+  .attachbtn{min-height:38px;min-width:44px;padding:6px 10px}
+  .attachbtn .lbl{display:none}
+  .livehint{flex:1 1 auto;min-width:0;font-size:10.5px;line-height:1.25;text-align:right;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}
+/* Landscape telefoon (weinig hoogte): de attach-balk wordt een smalle kolom-loze regel.
+   Hint weg, filesknop alleen icoon, alles zo laag mogelijk zodat de chat ruimte houdt.
+   LET OP: dit gebruikt bewust GEEN CSS "orientation:landscape" media feature meer.
+   Reden: met interactive-widget=resizes-content krimpt de layout-viewport-hoogte zodra
+   het toetsenbord opent, waardoor een RECHTOPSTAANDE telefoon plots "breder dan hoog"
+   meet en dus per ongeluk als landscape telt — precies wanneer je aan het typen bent.
+   Dan verdwijnt het tekstvak achter deze compacte/zwevende opmaak. In plaats daarvan
+   zet JS (zie syncAppHeight) een class .is-landscape op <html> op basis van de ECHTE
+   schermrotatie (screen.orientation), die niet verandert door het toetsenbord. */
+@media(max-height:480px){
+html.is-landscape .composer{padding-top:6px;position:relative}
+  /* attach-balk: geen eigen regel meer. Alleen zichtbaar als er fileschips zijn. */
+html.is-landscape .attachbar{margin:0;min-height:0}
+html.is-landscape .attachbar:not(:has(.filechip)){height:0;overflow:visible}
+html.is-landscape .attachbar:has(.filechip){padding-left:50px}
+html.is-landscape .attachbar .livehint{display:none}
+html.is-landscape .attachbtn .lbl{display:none}
+  /* paperclip zweeft in de linkerrand van de invoerrij (onder het tekstvak-startpunt) */
+html.is-landscape .attachbtn{position:absolute;left:max(16px,var(--sal));bottom:calc(8px + var(--sab) + 2px);z-index:2;min-height:42px;height:42px;min-width:42px;padding:0 10px;
+    display:inline-flex;align-items:center;justify-content:center;border-radius:11px}
+html.is-landscape .composer .box{grid-template-columns:minmax(0,1fr) auto auto !important;grid-template-areas:"input tools send" !important;align-items:end;
+    padding-left:50px}
+html.is-landscape .composer .voice-controls{min-width:0}
+html.is-landscape .composer #sendBtn{width:auto !important;padding:0 18px}
+html.is-landscape .composer textarea{min-height:42px;max-height:76px}
+html.is-landscape .composer #micBtn,html.is-landscape .composer #callBtn,html.is-landscape .composer #langSel,html.is-landscape .composer #sendBtn{min-height:42px}
+html.is-landscape .bar{padding-top:calc(4px + var(--sat));padding-bottom:4px}
+html.is-landscape .bar .btn{min-height:38px}
+}
+/* Fallback voor browsers zonder container queries (oud iOS/Android) */
+@supports not (container-type:inline-size){
+  @media(max-width:900px){
+    .composer .box{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"input input" "tools send";gap:8px}
+    .composer #sendBtn{width:100%;padding:0 16px}
+    #langSel{max-width:112px}
+    .voice-status{display:none}
+    .livehint{flex:1 1 100%;margin-left:0;text-align:left}
+  }
+}
+
+/* ---------- Kleine telefoon (<=420px) ---------- */
+@media(max-width:420px){
+  .msg{max-width:96%;font-size:14.5px}
+  .composer{padding-left:max(10px,var(--sal));padding-right:max(10px,var(--sar))}
+  #micBtn,#callBtn{min-width:44px;padding:8px}
+  #langSel{max-width:104px;padding-left:8px;padding-right:20px;background-position:right 7px center}
+  .bar .title{font-size:15px}
+  .chips{gap:7px}
+  .chip{padding:7px 11px;font-size:12.5px}
+}
+
+/* ---------- Landscape telefoon: weinig hoogte, compact ---------- */
+@media(max-height:480px){
+html.is-landscape .bar{padding-top:calc(6px + var(--sat));padding-bottom:6px}
+html.is-landscape .composer{padding-top:6px;padding-bottom:calc(8px + var(--sab))}
+html.is-landscape .attachbar .livehint{display:none}
+html.is-landscape .empty{margin-top:2vh}
+html.is-landscape .composer textarea{max-height:84px}
+}
+</style></head><body>
+<div class="app">
+<aside class="side" id="side">
+  <div class="top">
+    <h2 id="fam">Rana Family</h2>
+    <button class="btn" style="width:100%" id="newBtn">＋ New chat</button>
+    <input class="search" id="q" placeholder="Search chats…">
+  </div>
+  <div class="list" id="list"></div>
+  <div class="foot">
+    Logged in as <b id="who"></b>
+    <div class="row">
+      <a class="btn small ghost" id="adminLink" href="/admin.html" style="display:none">⚙ Admin</a>
+      <button class="btn small ghost" id="pwBtn">Password</button>
+      <button class="btn small ghost" id="outBtn">Log out</button>
+      <span id="installSlot" style="display:contents"></span>
+    </div>
+  </div>
+</aside>
+<section class="main">
+  <div class="bar">
+    <button class="btn ghost small" id="burger">☰</button>
+    <div class="title" id="title">Rana AI</div>
+    <button class="btn ghost small" id="exportBtn" style="display:none">Export</button>
+  </div>
+  <div class="msgs" id="msgs"><div class="inner" id="inner"></div></div>
+  <div class="composer">
+    <div class="attachbar">
+      <label class="btn small ghost attachbtn" title="Add file or image">
+        <span aria-hidden="true">📎</span><span class="lbl"> File</span>
+        <input id="fileInput" type="file" multiple accept="image/*,.pdf,.txt,.csv,.md,.json,.html,.xml">
+      </label>
+      <div class="filechips" id="fileChips"></div>
+      <span class="livehint">🌐 Live web search for current questions · max. 4 MB total</span>
+    </div>
+    <div class="box">
+      <textarea id="input" rows="1" placeholder="Write a message…" data-ph-long="Write a message… (Enter = verzenden, Shift+Enter = nieuwe regel)"></textarea>
+      <div class="voice-controls">
+        <button class="btn ghost" id="micBtn" type="button" title="Microphone off — click to turn on" aria-label="Microphone off — click to turn on">🔇</button>
+        <button class="btn ghost" id="callBtn" type="button" title="Start voice conversation" aria-label="Start voice conversation">📞</button>
+        <select id="langSel" class="btn ghost" title="Spoken language" aria-label="Spoken language"></select>
+        <span class="voice-status" id="voiceStatus" aria-live="polite">You can interrupt Rana while she is speaking.</span>
+      </div>
+      <button class="btn" id="sendBtn">Send</button>
+    </div>
+  </div>
+</section></div>
+<script src="/common.js"></script>
+<script src="/lang.js"></script>
+<script>
+let chatId = null, busy = false, searchT = null, AI = "Rana AI", WELCOME = "";
+let pendingFiles = [];
+
+// Veilige mini-markdown: ALLES wordt eerst ge-escaped, daarna pas opmaak
+function fmt(s){
+  s = String(s ?? "");
+  // Vangnet: als een (reasoning-)model toch <think>...</think> in de tekst laat
+  // staan — of bij oudere, al opgeslagen berichten van vóór de backend-fix —
+  // wordt dat hier alsnog uit de weergave gefilterd i.p.v. getoond aan de gebruiker.
+  s = s.replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "");
+  const openThink = s.search(/<think(?:ing)?>/i);
+  if (openThink !== -1) s = s.slice(0, openThink);
+  s = s.trim();
+  s = esc(s);
+  // Codeblokken en inline code eerst (voorkomt dat opmaak-tekens ERIN worden verwerkt)
+  const blocks = [];
+  s = s.replace(/```([\s\S]*?)```/g,(_,c)=>{blocks.push("<pre>"+c.replace(/^\w*\n/,"")+"</pre>");return "\u0000"+(blocks.length-1)+"\u0000";});
+  s = s.replace(/`([^`\n]+)`/g,(_,c)=>{blocks.push("<code>"+c+"</code>");return "\u0000"+(blocks.length-1)+"\u0000";});
+  // Koppen: #, ##, ### aan het begin van een regel
+  s = s.replace(/^######\s?(.+)$/gm,"<h6>$1</h6>");
+  s = s.replace(/^#####\s?(.+)$/gm,"<h5>$1</h5>");
+  s = s.replace(/^####\s?(.+)$/gm,"<h4>$1</h4>");
+  s = s.replace(/^###\s?(.+)$/gm,"<h3>$1</h3>");
+  s = s.replace(/^##\s?(.+)$/gm,"<h2>$1</h2>");
+  s = s.replace(/^#\s?(.+)$/gm,"<h1>$1</h1>");
+  // Vet en cursief
+  s = s.replace(/\*\*([^*\n]+)\*\*/g,"<b>$1</b>");
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,"$1<i>$2</i>");
+  // Lijstjes: opeenvolgende regels die met -, * of "1." beginnen worden <ul>/<ol>
+  s = s.replace(/(^|\n)((?:[ \t]*[-*][ \t]+.+(?:\n|$))+)/g,(m,pre,block)=>{
+    const items = block.trim().split(/\n/).map(l=>"<li>"+l.replace(/^[ \t]*[-*][ \t]+/,"")+"</li>").join("");
+    return pre+"<ul>"+items+"</ul>";
+  });
+  s = s.replace(/(^|\n)((?:[ \t]*\d+\.[ \t]+.+(?:\n|$))+)/g,(m,pre,block)=>{
+    const items = block.trim().split(/\n/).map(l=>"<li>"+l.replace(/^[ \t]*\d+\.[ \t]+/,"")+"</li>").join("");
+    return pre+"<ol>"+items+"</ol>";
+  });
+  // Afbeeldingen en links
+  s = s.replace(/!\[([^\]\n]+)\]\((\/api\/files\/[^)\s]+)\)/g,(_,alt,url)=>"<img class=\"chatimg\" src=\""+url+"\" alt=\""+alt+"\" loading=\"lazy\">");
+  s = s.replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+|\/api\/files\/[^)\s]+)\)/g,(_,label,url)=>"<a href=\""+url+"\" target=\"_blank\" rel=\"noopener noreferrer\">"+label+"</a>");
+  // Overgebleven enkele regeleinden -> <br> (niet binnen de al gebouwde blocks)
+  s = s.replace(/\n/g,"<br>");
+  // Codeblokken terugzetten
+  s = s.replace(/\u0000(\d+)\u0000/g,(_,i)=>blocks[i]);
+  return s;
+}
+async function init(){
+  const me = await api("/api/auth/me");
+  AI = me.settings.ai_name; WELCOME = me.settings.welcome_message || "";
+  document.title = AI + " – " + me.settings.family_name;
+  $("fam").textContent = me.settings.family_name; $("title").textContent = AI;
+  $("who").textContent = me.user.display_name || me.user.username;
+  if(me.user.is_admin) $("adminLink").style.display="inline-block";
+  showEmpty(); loadList();
+}
+async function loadList(){
+  const q = $("q").value.trim();
+  const list = await api("/api/chats"+(q?("?q="+encodeURIComponent(q)):""));
+  const el = $("list"); el.innerHTML="";
+  if(!list.length){ el.innerHTML='<div style="color:var(--muted);padding:14px">No chats yet.</div>'; return; }
+  list.forEach(c=>{
+    const d = document.createElement("div");
+    d.className="item"+(c.id===chatId?" active":"");
+    d.innerHTML='<span>'+(c.pinned?"📌":"💬")+'</span><span class="t">'+esc(c.title)+'</span>'+
+      '<span class="acts"><button class="ib" title="Pin">📌</button><button class="ib" title="Rename">✏️</button><button class="ib" title="Delete">🗑</button></span>';
+    d.onclick=()=>openChat(c.id);
+    const [pin,ren,del]=d.querySelectorAll(".ib");
+    pin.onclick=async e=>{e.stopPropagation();await api("/api/chats/"+c.id,"PATCH",{pinned:!c.pinned});loadList()};
+    ren.onclick=async e=>{e.stopPropagation();const t=prompt("New title:",c.title);if(t){await api("/api/chats/"+c.id,"PATCH",{title:t});loadList();if(c.id===chatId)$("title").textContent=t}};
+    del.onclick=async e=>{e.stopPropagation();if(!confirm("Delete this chat?"))return;await api("/api/chats/"+c.id,"DELETE");if(c.id===chatId){chatId=null;showEmpty()}loadList()};
+    el.appendChild(d);
+  });
+}
+function showEmpty(){
+  $("title").textContent=AI; $("exportBtn").style.display="none";
+  const hello = WELCOME ? esc(WELCOME) : "Ask a question or choose an idea:";
+  $("inner").innerHTML='<div class="empty"><h2>Hi! I’m '+esc(AI)+' 👋</h2><div>'+hello+'</div><div class="chips">'+
+   ["What would be fun to do with the family today?","Help me plan a weekly menu","Come up with a birthday surprise"]
+   .map(t=>'<span class="chip">'+esc(t)+'</span>').join("")+"</div></div>";
+  $("inner").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{$("input").value=c.textContent;send()});
+}
+function addMsg(role,text,time){
+  const d=document.createElement("div"); d.className="msg "+role;
+  d.innerHTML=fmt(text)+(time?'<div class="meta">'+esc(new Date(time).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}))+"</div>":"");
+  $("inner").appendChild(d); $("msgs").scrollTop=1e9; return d;
+}
+async function openChat(id){
+  const j=await api("/api/chats/"+id); chatId=id;
+  $("title").textContent=j.chat.title; $("exportBtn").style.display="inline-block";
+  $("inner").innerHTML=""; j.messages.forEach(m=>addMsg(m.role,m.content,m.created_at));
+  if(!j.messages.length) showEmpty();
+  $("side").classList.remove("open"); loadList(); $("input").focus();
+}
+async function newChat(){
+  const j=await api("/api/chats","POST"); chatId=j.id;
+  $("exportBtn").style.display="none"; showEmpty(); $("title").textContent="New chat";
+  $("side").classList.remove("open"); await loadList(); $("input").focus();
+}
+function renderFiles(){
+  const el = $("fileChips");
+  el.innerHTML = pendingFiles.map((f,i)=>
+    '<span class="filechip">📎 '+esc(f.name)+' <button type="button" data-i="'+i+'" title="Remove">×</button></span>'
+  ).join("");
+  el.querySelectorAll("button").forEach(b=>b.onclick=()=>{ pendingFiles.splice(Number(b.dataset.i),1); renderFiles(); });
+}
+function readFile(file, name, mimeType){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve({name:name||file.name,mimeType:mimeType||file.type || "application/octet-stream",data:String(r.result).split(",")[1] || ""});
+    r.onerror=()=>reject(new Error("Could not read "+(name||file.name)+"."));
+    r.readAsDataURL(file);
+  });
+}
+// Big photos are slow to upload and slow for the AI model to process (the server has ~10s in total).
+// Shrink photos/screenshots to max 1280px JPEG before sending; if anything fails, send the original.
+async function shrinkImage(file){
+  try{
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size < 250*1024 || !window.createImageBitmap) return null;
+    const bmp=await createImageBitmap(file);
+    const scale=Math.min(1, 1280/Math.max(bmp.width,bmp.height));
+    const w=Math.max(1,Math.round(bmp.width*scale)), h=Math.max(1,Math.round(bmp.height*scale));
+    const c=document.createElement("canvas"); c.width=w; c.height=h;
+    const cx=c.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,w,h); cx.drawImage(bmp,0,0,w,h);
+    const blob=await new Promise(res=>c.toBlob(res,"image/jpeg",0.82));
+    return blob && blob.size < file.size ? blob : null;
+  }catch{ return null; }
+}
+$("fileInput").addEventListener("change",async e=>{
+  try{
+    let newBytes = pendingFiles.reduce((n,f)=>n + Math.floor((f.data.length||0)*3/4),0);
+    for(const f of [...e.target.files]){
+      if(f.size>30*1024*1024) throw new Error(f.name+" is groter dan 30 MB.");
+      if(pendingFiles.length>=6) throw new Error("Maximum 6 files per message.");
+      const small = await shrinkImage(f);
+      const size = small ? small.size : f.size;
+      if(!small && f.size>8*1024*1024) throw new Error(f.name+" is groter dan 8 MB.");
+      if(newBytes + size > 4*1024*1024) throw new Error("The total upload may be at most 4 MB.");
+      const item = small ? await readFile(small, f.name.replace(/\.[^.]+$/,"")+".jpg", "image/jpeg") : await readFile(f);
+      pendingFiles.push(item);
+      newBytes += size;
+    }
+    renderFiles();
+  }catch(err){ toast(err.message,true) }
+  e.target.value="";
+});
+
+// ---- Spoken language ----
+// "auto" = follow the conversation: the language of the latest answer/message (starts in English).
+// Een vaste keuze wordt onthouden. Browser-spraakherkenning kan de taal niet zelf raden,
+// daarom luisteren we in de laatst gebruikte taal en wisselt de gebruiker via de kiezer.
+const LANGS = window.RanaLang.LANGS;
+let langChoice = "auto";
+try{ langChoice = localStorage.getItem("ranaLang") || "auto"; }catch{}
+if(langChoice!=="auto" && !LANGS[langChoice]) langChoice="auto";
+let lastLang = "en"; // laatst gedetecteerde taal in het gesprek
+function activeLang(){ return langChoice==="auto" ? lastLang : langChoice; }
+function noteLang(text){
+  const d = window.RanaLang.detectLang(text);
+  if(d) lastLang = d;
+  return d;
+}
+function buildLangSel(){
+  const sel=$("langSel"); if(!sel) return;
+  sel.innerHTML = `<option value="auto">🌐 Auto</option>` +
+    Object.entries(LANGS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("");
+  sel.value = langChoice;
+  sel.onchange = ()=>{
+    langChoice = sel.value;
+    try{ localStorage.setItem("ranaLang", langChoice); }catch{}
+    // Herstart de microfoon zodat de nieuwe luistertaal meteen geldt.
+    if(recognition){ stopListening(); if(voiceSession && micEnabled && !speaking) startListening(); }
+    updateVoiceUI();
+  };
+}
+
+let recognition = null;
+let voiceSession = false;
+let micEnabled = false;
+let speaking = false;
+let shouldResumeListening = false;
+let restartTimer = null;
+let speechToken = 0;
+
+function voiceSupported(){
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+function updateVoiceUI(){
+  const mic = $("micBtn"), call = $("callBtn");
+  if(mic){
+    mic.classList.toggle("active", micEnabled);
+    mic.textContent = micEnabled ? "🎙️" : "🔇";
+    mic.title = micEnabled ? "Microphone on — click to turn off" : "Microphone off — click to turn on";
+    mic.setAttribute("aria-label", mic.title);
+  }
+  if(call){
+    call.classList.toggle("active", voiceSession);
+    call.textContent = voiceSession ? "⏹️" : "📞";
+    call.title = voiceSession ? "Stop session" : "Start voice conversation";
+    call.setAttribute("aria-label", call.title);
+  }
+  const el=$("voiceStatus");
+  if(el){
+    if(!voiceSession) el.textContent = micEnabled ? "Microphone on" : "";
+    else if(speaking) el.textContent = "Rana is speaking — interrupt her to respond";
+    else if(micEnabled) el.textContent = "Listening… ("+(LANGS[activeLang()]?.label||"")+")";
+    else el.textContent = "Session stopped";
+  }
+}
+let currentAudio = null;
+function cancelSpeech(){
+  speechToken++;
+  speaking=false;
+  if("speechSynthesis" in window) window.speechSynthesis.cancel();
+  if(currentAudio){ try{ currentAudio.pause(); currentAudio.src=""; }catch{} currentAudio=null; }
+}
+function stopListening(){
+  if(restartTimer){ clearTimeout(restartTimer); restartTimer=null; }
+  if(recognition){
+    try{ recognition.onend=null; recognition.stop(); }catch{}
+    recognition=null;
+  }
+}
+function createRecognition(){
+  const C=window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!C) return null;
+  const r=new C();
+  r.lang=window.RanaLang.bcp47(activeLang());
+  r.continuous=false;
+  r.interimResults=true;
+  r.maxAlternatives=1;
+
+  r.onstart=()=>{
+    updateVoiceUI();
+  };
+
+  r.onresult=(e)=>{
+    let finalText="", interim="";
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const part=e.results[i][0]?.transcript || "";
+      if(e.results[i].isFinal) finalText+=part;
+      else interim+=part;
+    }
+
+    const input=$("input");
+    if(finalText || interim){
+      input.value=finalText || interim;
+      input.style.height="auto";
+      input.style.height=Math.min(input.scrollHeight,(window.innerWidth<=900?120:180))+"px";
+    }
+
+    // Speaking while Rana is talking = user interruption.
+    if(finalText){
+      if(speaking){
+        cancelSpeech();
+        shouldResumeListening=false;
+      }
+      if(langChoice==="auto") noteLang(finalText);
+      if(input.value.trim()) send();
+    }
+  };
+
+  r.onerror=(e)=>{
+    if(e.error==="not-allowed" || e.error==="service-not-allowed"){
+      micEnabled=false;
+      stopListening();
+      updateVoiceUI();
+      toast("Microphone access was denied.",true);
+    }
+  };
+
+  r.onend=()=>{
+    recognition=null;
+    if(voiceSession && micEnabled && !speaking){
+      restartTimer=setTimeout(startListening,250);
+    } else {
+      updateVoiceUI();
+    }
+  };
+  return r;
+}
+function startListening(){
+  if(!voiceSession || !micEnabled || speaking || recognition) return;
+  if(!voiceSupported()){
+    toast("Speech recognition is not supported in this browser.",true);
+    micEnabled=false;
+    updateVoiceUI();
+    return;
+  }
+  recognition=createRecognition();
+  try{ recognition.start(); }
+  catch{ recognition=null; }
+}
+function setMic(enabled){
+  micEnabled=!!enabled;
+  if(!micEnabled) stopListening();
+  else if(voiceSession && !speaking) startListening();
+  updateVoiceUI();
+}
+async function requestMicAccess(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    toast("Microphone access is not supported in this browser.",true);
+    return false;
+  }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    // We only needed the permission prompt; Web Speech API captures the audio itself.
+    stream.getTracks().forEach(t=>t.stop());
+    return true;
+  }catch(err){
+    toast("Microphone access was denied or is unavailable.",true);
+    return false;
+  }
+}
+async function toggleMic(){
+  if(micEnabled){ setMic(false); return; }
+  const ok = await requestMicAccess();
+  if(!ok) return;
+  setMic(true);
+}
+function stopSession(){
+  voiceSession=false;
+  micEnabled=false;
+  stopListening();
+  cancelSpeech();
+  updateVoiceUI();
+}
+function startSession(){
+  voiceSession=true;
+  micEnabled=true;
+  cancelSpeech();
+  updateVoiceUI();
+  startListening();
+}
+async function toggleCall(){
+  if(voiceSession){ stopSession(); return; }
+  const ok = await requestMicAccess();
+  if(!ok) return;
+  startSession();
+}
+const voiceCache = {}; // taalcode -> beste browserstem
+function pickBestVoice(code){
+  if(!("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if(!voices.length) return null;
+  const want = (code||"en").toLowerCase();
+  const inLang = voices.filter(v=>String(v.lang||"").toLowerCase().replace("_","-").split("-")[0]===want);
+  // Voorkeur: netwerkstemmen (localService=false) zijn meestal de betere cloudstemmen i.p.v. de robotachtige lokale.
+  // No stem voor deze taal? Dan null: de browser kiest dan zelf op basis van u.lang (beter dan een verkeerde taal).
+  return inLang.find(v=>v.localService===false && /google/i.test(v.name))
+    || inLang.find(v=>v.localService===false)
+    || inLang.find(v=>/google/i.test(v.name))
+    || inLang[0]
+    || null;
+}
+function voiceFor(code){
+  if(voiceCache[code]) return voiceCache[code];
+  const v=pickBestVoice(code);
+  if(v) voiceCache[code]=v;
+  return v;
+}
+if("speechSynthesis" in window){
+  window.speechSynthesis.onvoiceschanged = ()=>{ for(const k of Object.keys(voiceCache)) delete voiceCache[k]; };
+}
+let elevenLabsUnavailable = false; // wordt true na de eerste keer dat er geen ElevenLabs-key is ingesteld
+function finishSpeech(myToken){
+  if(myToken!==speechToken || !voiceSession) return;
+  speaking=false;
+  updateVoiceUI();
+  if(micEnabled) startListening();
+}
+function speakWithBrowser(clean, myToken, code){
+  if(!("speechSynthesis" in window)){ finishSpeech(myToken); return; }
+  const u=new SpeechSynthesisUtterance(clean);
+  const v=voiceFor(code);
+  if(v) u.voice = v;
+  u.lang=window.RanaLang.bcp47(code);
+  u.rate=1;
+  u.pitch=1;
+  u.onend=()=>finishSpeech(myToken);
+  u.onerror=()=>finishSpeech(myToken);
+  window.speechSynthesis.speak(u);
+}
+async function speakReply(text){
+  if(!voiceSession || !text) return;
+  stopListening();
+  cancelSpeech();
+  const myToken=++speechToken;
+  const clean=String(text)
+    .replace(/```[\s\S]*?```/g,"")
+    .replace(/[*_`#\[\]]/g,"")
+    .trim();
+  if(!clean) return;
+  // Spreektaal: vaste keuze, anders de taal van het antwoord zelf (unknown -> laatste gesprekstaal).
+  const code = langChoice!=="auto" ? langChoice : (noteLang(clean) || lastLang);
+  speaking=true;
+  updateVoiceUI();
+
+  if(!elevenLabsUnavailable){
+    try{
+      const r=await fetch("/api/tts",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-Requested-With":"rana"},body:JSON.stringify({text:clean,lang:code})});
+      if(myToken!==speechToken) return; // ondertussen onderbroken
+      if(r.ok){
+        const blob=await r.blob();
+        const url=URL.createObjectURL(blob);
+        const audio=new Audio(url);
+        currentAudio=audio;
+        audio.onended=()=>{ URL.revokeObjectURL(url); finishSpeech(myToken); };
+        audio.onerror=()=>{ URL.revokeObjectURL(url); finishSpeech(myToken); };
+        await audio.play();
+        return;
+      }
+      if(r.status===400) elevenLabsUnavailable=true; // geen key ingesteld — niet elke keer opnieuw proberen
+    }catch{ /* netwerkfout: val terug op de browserstem voor dit bericht */ }
+  }
+  if(myToken!==speechToken) return;
+  speakWithBrowser(clean, myToken, code);
+}
+
+async function send(){
+  const inp=$("input"), text=inp.value.trim(); if((!text && !pendingFiles.length)||busy) return;
+  busy=true; $("sendBtn").disabled=true;
+  try{
+    if(!chatId){ const j=await api("/api/chats","POST"); chatId=j.id }
+    if($("inner").querySelector(".empty")) $("inner").innerHTML="";
+    inp.value=""; inp.style.height="auto"; addMsg("user",text);
+    const t=addMsg("assistant","");
+    t.innerHTML='<span class="typing"><span></span><span></span><span></span></span>';
+    try{
+    const j=await api("/api/chats/"+chatId+"/send","POST",{message:text,attachments:pendingFiles,clientTimezone:Intl.DateTimeFormat().resolvedOptions().timeZone||""});
+      t.innerHTML=fmt(j.reply);
+      if(voiceSession) speakReply(j.reply);
+      if(j.route){
+        const r=j.route;
+        const routeMeta=document.createElement("div"); routeMeta.className="meta";
+        routeMeta.textContent=`Task: ${r.task || "chat"}${r.provider && r.provider!=="direct-live-service" ? ` · ${r.provider}` : ""}${r.model ? ` · model: ${r.model}` : ""}${r.search_results ? ` · ${r.search_results} live sources` : ""}`;
+        t.appendChild(routeMeta);
+      }
+      $("title").textContent=j.title; $("exportBtn").style.display="inline-block";
+      pendingFiles=[]; renderFiles();
+    }catch(e){ t.classList.remove("typing"); t.textContent="⚠️ "+e.message }
+  }catch(e){ toast(e.message,true) }
+  busy=false; $("sendBtn").disabled=false; $("msgs").scrollTop=1e9; loadList(); inp.focus();
+}
+$("newBtn").onclick=newChat; $("sendBtn").onclick=send;
+$("micBtn").onclick=toggleMic; $("callBtn").onclick=toggleCall;
+updateVoiceUI();
+// Houd de echte zichtbare hoogte (zonder toetsenbord) bij als CSS-variabele, zodat de
+// composer nooit ineengedrukt wordt of onder het toetsenbord verdwijnt. 100dvh alleen is
+// niet genoeg: niet elke mobiele browser respecteert `interactive-widget=resizes-content`.
+// Echte apparaat-rotatie (niet de door het toetsenbord verkleinde viewport) bepalen.
+// screen.orientation/screen.width/height veranderen NIET als het toetsenbord opent,
+// in tegenstelling tot de CSS "orientation" media feature of window.innerWidth/Height.
+function isRealLandscape(){
+  if (window.screen && screen.orientation && screen.orientation.type) {
+    return screen.orientation.type.indexOf("landscape") === 0;
+  }
+  if (window.screen && screen.width && screen.height) return screen.width > screen.height;
+  return window.innerWidth > window.innerHeight; // laatste redmiddel, kan door toetsenbord afwijken
+}
+function syncOrientationClass(){
+  document.documentElement.classList.toggle("is-landscape", isRealLandscape());
+}
+function syncAppHeight(){
+  syncOrientationClass();
+  const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  document.documentElement.style.setProperty("--app-height", h + "px");
+  // Op mobiel staat de composer position:fixed t.o.v. het echte scherm. Als het
+  // toetsenbord opent verkleint visualViewport.height zonder dat window.innerHeight
+  // meebeweegt op sommige browsers; het verschil is de hoogte van het toetsenbord,
+  // en dat gebruiken we als bottom-offset zodat de composer er altijd bovenop blijft
+  // staan (en nooit half verborgen/ingeklapt raakt).
+  if (window.visualViewport){
+    const kb = Math.max(0, window.innerHeight - visualViewport.height - visualViewport.offsetTop);
+    document.documentElement.style.setProperty("--kb-offset", kb + "px");
+  }
+  const composer = document.querySelector(".composer");
+  if (composer) document.documentElement.style.setProperty("--composer-h", composer.offsetHeight + "px");
+}
+if (window.visualViewport){
+  visualViewport.addEventListener("resize", syncAppHeight);
+  visualViewport.addEventListener("scroll", syncAppHeight);
+}
+window.addEventListener("resize", syncAppHeight);
+window.addEventListener("orientationchange", ()=>setTimeout(syncAppHeight,50));
+if (window.screen && screen.orientation) screen.orientation.addEventListener("change", ()=>setTimeout(syncAppHeight,50));
+syncAppHeight();
+// Als het tekstvak focus krijgt (toetsenbord gaat open), zorg dat de composer + laatste
+// berichten in beeld blijven i.p.v. verborgen achter het toetsenbord.
+$("input").addEventListener("focus", ()=>{
+  syncAppHeight();
+  setTimeout(()=>{ syncAppHeight(); $("msgs").scrollTop = 1e9; $("input").scrollIntoView({block:"end", behavior:"smooth"}); }, 250);
+});
+// Placeholder: lange uitleg (Enter/Shift+Enter) alleen waar een toetsenbord is en het past; anders kort.
+function fitPlaceholder(){
+  const el=$("input"); if(!el) return;
+  const long = el.dataset.phLong, short = "Write a message…";
+  const wide = window.matchMedia && window.matchMedia("(hover:hover) and (pointer:fine)").matches && el.clientWidth>=470;
+  el.placeholder = (wide && long) ? long : short;
+}
+window.addEventListener("resize", fitPlaceholder);
+fitPlaceholder();
+buildLangSel();
+if(!voiceSupported()){ $("micBtn").disabled=true; $("callBtn").disabled=true; $("voiceStatus").textContent="Speech not supported"; }
+$("burger").onclick=()=>$("side").classList.toggle("open");
+$("exportBtn").onclick=()=>{ if(chatId) location.href="/api/chats/"+chatId+"/export" };
+$("q").oninput=()=>{clearTimeout(searchT);searchT=setTimeout(loadList,250)};
+$("outBtn").onclick=async()=>{ await api("/api/auth/logout","POST",{},{noRedirect:true}); location.href="/login.html" };
+$("pwBtn").onclick=async()=>{
+  const old=prompt("Current password:"); if(!old) return;
+  const nw=prompt("New password (min. 8 characters):"); if(!nw) return;
+  try{ await api("/api/auth/password","POST",{old,next:nw}); toast("Password gewijzigd ✅") }catch(e){ toast(e.message,true) }
+};
+$("input").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()} });
+$("input").addEventListener("input",e=>{ e.target.style.height="auto"; e.target.style.height=Math.min(e.target.scrollHeight,(window.innerWidth<=900?120:180))+"px" });
+init();
+</script><script src="/pwa.js"></script>
+</body></html>
